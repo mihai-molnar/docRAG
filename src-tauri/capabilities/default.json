@@ -21,7 +21,9 @@
     {
       "identifier": "opener:allow-open-path",
       "allow": [
-        { "path": "$HOME/**" }
+        { "path": "$HOME/**/*.pdf" },
+        { "path": "$HOME/**/*.docx" },
+        { "path": "$HOME/**/*.pptx" }
       ]
     }
   ]

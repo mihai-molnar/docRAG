@@ -1,5 +1,9 @@
 const EMBED_BATCH_SIZE = 100;
 
+function sanitizeError(message: string): string {
+  return message.replace(/sk-[A-Za-z0-9_-]+/g, "sk-***");
+}
+
 export async function batchEmbed(
   texts: string[],
   apiKey: string,
@@ -21,7 +25,7 @@ export async function batchEmbed(
 
     if (!response.ok) {
       const err = await response.text();
-      throw new Error(`OpenAI embeddings error: ${response.status} — ${err}`);
+      throw new Error(sanitizeError(`OpenAI embeddings error: ${response.status} — ${err}`));
     }
 
     const data = await response.json();
@@ -63,7 +67,7 @@ export async function* streamChatCompletion(
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(`OpenAI chat error: ${response.status} — ${err}`);
+    throw new Error(sanitizeError(`OpenAI chat error: ${response.status} — ${err}`));
   }
 
   const reader = response.body?.getReader();
