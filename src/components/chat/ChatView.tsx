@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { MessageSquare, FolderOpen, Trash2 } from "lucide-react";
 import { useChat } from "../../hooks/useChat";
 import { useAppStore } from "../../store/appStore";
@@ -17,6 +17,11 @@ export function ChatView() {
   const settings = useAppStore((s) => s.settings);
   const setActiveView = useAppStore((s) => s.setActiveView);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const documentNames = useMemo(
+    () => (index ? index.files.map((f) => f.name) : []),
+    [index]
+  );
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -117,7 +122,11 @@ export function ChatView() {
         )}
       </div>
 
-      <ChatInput onSend={sendMessage} disabled={streaming} />
+      <ChatInput
+        onSend={sendMessage}
+        disabled={streaming}
+        documentNames={documentNames}
+      />
     </div>
   );
 }

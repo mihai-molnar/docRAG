@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useAppStore } from "../store/appStore";
 import { vectorStore } from "../services/vectorStore";
 import { batchEmbed, streamChatCompletion } from "../services/openaiClient";
+import { parseMentions } from "../lib/mentionParser";
 import type { ChatMessage, ChatSource } from "../types/chat";
 
 const SYSTEM_PROMPT = `You are a helpful assistant that answers questions based ONLY on the provided document excerpts.
@@ -41,6 +42,14 @@ export function useChat() {
     async (content: string) => {
       if (!settings.apiKey || streaming) return;
 
+      // Parse @mentions from the message
+      const index = useAppStore.getState().index;
+      const knownDocNames = index ? index.files.map((f) => f.name) : [];
+      const { mentionedDocuments, cleanContent } = parseMentions(
+        content,
+        knownDocNames
+      );
+
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "user",
@@ -52,14 +61,21 @@ export function useChat() {
       setStreaming(true);
 
       try {
-        // Embed the query and search
+        // Embed the clean content (@ stripped) and search
         const [queryEmbedding] = await batchEmbed(
-          [content],
+          [cleanContent],
           settings.apiKey,
           settings.embeddingModel
         );
 
-        const results = vectorStore.search(queryEmbedding, settings.topK);
+        const results =
+          mentionedDocuments.length > 0
+            ? vectorStore.searchFiltered(
+                queryEmbedding,
+                settings.topK,
+                mentionedDocuments
+              )
+            : vectorStore.search(queryEmbedding, settings.topK);
 
         const sources: ChatSource[] = results.map((r) => ({
           documentName: r.entry.documentName,

@@ -1,22 +1,8 @@
-import { FileText, FileSpreadsheet, Presentation } from "lucide-react";
 import type { PersistedIndex } from "../../types/vectorStore";
+import { getIcon } from "../../lib/docIcon";
 
 interface DocumentListProps {
   index: PersistedIndex;
-}
-
-function getIcon(name: string) {
-  const ext = name.split(".").pop()?.toLowerCase();
-  switch (ext) {
-    case "pdf":
-      return <FileText size={16} className="text-red-400" />;
-    case "docx":
-      return <FileSpreadsheet size={16} className="text-blue-400" />;
-    case "pptx":
-      return <Presentation size={16} className="text-orange-400" />;
-    default:
-      return <FileText size={16} className="text-zinc-400" />;
-  }
 }
 
 export function DocumentList({ index }: DocumentListProps) {

@@ -40,10 +40,10 @@ src/
   hooks/          — useSettings, useIndex, useChat
   components/
     layout/       — AppLayout, Sidebar
-    chat/         — ChatView, MessageBubble, ChatInput, SourceChips
+    chat/         — ChatView, MessageBubble, ChatInput, MentionDropdown, SourceChips
     documents/    — DocumentsView, FolderPicker, DocumentList, IndexingProgress
     settings/     — SettingsView, ApiKeyInput, ModelSelector
-  lib/            — cosine, pptxParser, constants
+  lib/            — cosine, pptxParser, constants, mentionParser, docIcon
   store/          — appStore (Zustand)
 src-tauri/
   src/commands/   — filesystem.rs (scan, read, hash with path validation), persistence.rs (index save/load)
