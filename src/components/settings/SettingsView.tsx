@@ -1,9 +1,23 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, HelpCircle } from "lucide-react";
 import { useSettings } from "../../hooks/useSettings";
 import { useAppStore } from "../../store/appStore";
 import { CHAT_MODELS, EMBEDDING_MODELS } from "../../types/settings";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelector } from "./ModelSelector";
+
+function SettingLabel({ text, tooltip }: { text: string; tooltip: string }) {
+  return (
+    <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-300 mb-1.5">
+      {text}
+      <span className="relative group">
+        <HelpCircle size={14} className="text-zinc-500 cursor-help" />
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-700 text-xs text-zinc-200 whitespace-normal w-56 text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity pointer-events-none z-50">
+          {tooltip}
+        </span>
+      </span>
+    </label>
+  );
+}
 
 export function SettingsView() {
   const { settings, saveSetting } = useSettings();
@@ -32,9 +46,10 @@ export function SettingsView() {
             API
           </h3>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-              OpenAI API Key
-            </label>
+            <SettingLabel
+              text="OpenAI API Key"
+              tooltip="Your secret API key from platform.openai.com. Stored locally on your device, never sent anywhere except OpenAI."
+            />
             <ApiKeyInput
               value={settings.apiKey}
               onChange={(v) => saveSetting("apiKey", v)}
@@ -51,12 +66,14 @@ export function SettingsView() {
             value={settings.chatModel}
             options={CHAT_MODELS}
             onChange={(v) => saveSetting("chatModel", v)}
+            tooltip="The OpenAI model used to generate chat responses. Larger models are more capable but slower and cost more."
           />
           <ModelSelector
             label="Embedding Model"
             value={settings.embeddingModel}
             options={EMBEDDING_MODELS}
             onChange={(v) => saveSetting("embeddingModel", v)}
+            tooltip="The model used to convert text into vectors for similarity search. Changing this requires re-indexing."
           />
         </section>
 
@@ -82,9 +99,10 @@ export function SettingsView() {
           </h3>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-              Chunk Size (characters)
-            </label>
+            <SettingLabel
+              text="Chunk Size (characters)"
+              tooltip="How many characters each document chunk contains. Larger chunks give more context per result but may dilute relevance."
+            />
             <input
               type="number"
               value={settings.chunkSize}
@@ -98,9 +116,10 @@ export function SettingsView() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-              Chunk Overlap (characters)
-            </label>
+            <SettingLabel
+              text="Chunk Overlap (characters)"
+              tooltip="How many characters overlap between consecutive chunks. Overlap helps avoid splitting important sentences across chunks."
+            />
             <input
               type="number"
               value={settings.chunkOverlap}
@@ -123,9 +142,10 @@ export function SettingsView() {
           </h3>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-              Top-K Results
-            </label>
+            <SettingLabel
+              text="Top-K Results"
+              tooltip="Number of most relevant chunks retrieved from the index and sent to the model as context for each question."
+            />
             <input
               type="number"
               value={settings.topK}
@@ -139,9 +159,10 @@ export function SettingsView() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-              Temperature
-            </label>
+            <SettingLabel
+              text="Temperature"
+              tooltip="Controls response randomness. Lower values (0–0.3) give focused, deterministic answers. Higher values (0.7+) give more creative, varied responses."
+            />
             <input
               type="number"
               value={settings.temperature}
