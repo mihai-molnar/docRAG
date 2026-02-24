@@ -18,6 +18,7 @@
 - [x] Security hardening: CSP, Rust path validation, narrowed opener scope, error sanitization
 - [x] @Document mention autocomplete: type `@` in chat to filter/select indexed documents, scopes vector search to mentioned docs only
 - [x] Source citations deduped by document (best chunk per doc), colored file-type icons
+- [x] Help tooltips on all settings fields
 
 ## Remaining
 - [ ] Error handling polish: user-friendly messages for invalid API key (401), network errors, parse failures; skip broken files during indexing instead of aborting
