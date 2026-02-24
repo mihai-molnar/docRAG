@@ -1,21 +1,32 @@
-import { useState } from "react";
-import { FileText, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { openPath } from "@tauri-apps/plugin-opener";
+import { getIcon } from "../../lib/docIcon";
 import type { ChatSource } from "../../types/chat";
 
 interface SourceChipsProps {
   sources: ChatSource[];
 }
 
+/** Keep only the highest-scoring chunk per document. */
+function dedupeByDocument(sources: ChatSource[]): ChatSource[] {
+  const best = new Map<string, ChatSource>();
+  for (const s of sources) {
+    const existing = best.get(s.documentPath);
+    if (!existing || s.score > existing.score) {
+      best.set(s.documentPath, s);
+    }
+  }
+  // Preserve original score ordering
+  return Array.from(best.values()).sort((a, b) => b.score - a.score);
+}
+
 export function SourceChips({ sources }: SourceChipsProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  const [showAll, setShowAll] = useState(false);
+  const dedupedSources = useMemo(() => dedupeByDocument(sources), [sources]);
 
-  if (!sources.length) return null;
-
-  const displayedSources = showAll ? sources : sources.slice(0, 2);
-  const hasMore = sources.length > 2;
+  if (!dedupedSources.length) return null;
 
   const toggle = (i: number) => {
     setExpandedIndex(expandedIndex === i ? null : i);
@@ -34,7 +45,7 @@ export function SourceChips({ sources }: SourceChipsProps) {
       <p className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">
         Sources
       </p>
-      {displayedSources.map((source, i) => {
+      {dedupedSources.map((source, i) => {
         const isExpanded = expandedIndex === i;
         const location = source.pageNumber
           ? `${source.documentName} — p.${source.pageNumber}`
@@ -46,7 +57,7 @@ export function SourceChips({ sources }: SourceChipsProps) {
               onClick={() => toggle(i)}
               className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-zinc-800 transition-colors"
             >
-              <FileText size={13} className="text-zinc-500 shrink-0" />
+              <span className="shrink-0">{getIcon(source.documentName, 13)}</span>
               <span className="text-xs text-zinc-300 truncate flex-1">
                 {location}
               </span>
@@ -74,14 +85,6 @@ export function SourceChips({ sources }: SourceChipsProps) {
           </div>
         );
       })}
-      {hasMore && !showAll && (
-        <button
-          onClick={() => setShowAll(true)}
-          className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          +{sources.length - 2} more sources
-        </button>
-      )}
     </div>
   );
 }
