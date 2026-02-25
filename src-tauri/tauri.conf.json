@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicholasrice/tauri-search/refs/heads/main/.schemas/schema-2.1.1.json",
-  "productName": "DocRAG",
+  "productName": "Inkling",
   "version": "0.1.0",
-  "identifier": "com.docrag.app",
+  "identifier": "com.inkling.app",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "DocRAG",
+        "title": "Inkling",
         "width": 1100,
         "height": 700,
         "minWidth": 900,

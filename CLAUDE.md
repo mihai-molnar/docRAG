@@ -1,4 +1,4 @@
-# DocRAG — Development Guide
+# Inkling — Development Guide
 
 ## Project Overview
 Desktop RAG app: select a folder of documents (PDF, DOCX, PPTX), index them into embeddings, and chat with an AI that answers from those documents only.
@@ -27,6 +27,7 @@ cargo check          # Rust type check (run from src-tauri/)
 ## Important Notes
 - Frontend changes hot-reload via Vite — no restart needed
 - Rust changes require restarting `npx tauri dev`
+- Icon changes require `cargo clean` before rebuild (cached artifacts embed the old icon)
 - CSP is enabled and restrictive — only `https://api.openai.com` for fetch, `blob:` for pdf.js worker
 - Opener plugin scoped to `$HOME/**/*.{pdf,docx,pptx}` only
 - API key stored via `tauri-plugin-store` in OS app data dir (not in repo)

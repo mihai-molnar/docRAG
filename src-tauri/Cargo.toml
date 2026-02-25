@@ -1,12 +1,12 @@
 [package]
-name = "doc-rag"
+name = "inkling"
 version = "0.1.0"
 description = "Local Document Chat Desktop App"
 authors = ["you"]
 edition = "2021"
 
 [lib]
-name = "doc_rag_lib"
+name = "inkling_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

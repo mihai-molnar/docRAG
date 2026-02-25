@@ -15,7 +15,7 @@ export function Sidebar() {
   return (
     <aside className="w-[220px] shrink-0 bg-zinc-900 border-r border-zinc-800 flex flex-col">
       <div className="p-4 border-b border-zinc-800">
-        <h1 className="text-lg font-bold text-white">DocRAG</h1>
+        <h1 className="text-lg font-bold text-white">Inkling</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Chat with your documents</p>
       </div>
 

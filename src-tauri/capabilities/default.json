@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicholasrice/tauri-search/refs/heads/main/.schemas/schema-2.1.1.json",
   "identifier": "default",
-  "description": "Default capabilities for DocRAG",
+  "description": "Default capabilities for Inkling",
   "windows": ["main"],
   "permissions": [
     "core:default",

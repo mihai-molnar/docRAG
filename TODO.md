@@ -20,6 +20,8 @@
 - [x] Source citations deduped by document (best chunk per doc), colored file-type icons
 - [x] Help tooltips on all settings fields
 
+- [x] Rename DocRAG → Inkling + new quill pen nib app icon
+
 ## Remaining
 - [ ] Error handling polish: user-friendly messages for invalid API key (401), network errors, parse failures; skip broken files during indexing instead of aborting
 - [ ] Final build verification and end-to-end testing
