@@ -3,6 +3,7 @@ import { useAppStore } from "../store/appStore";
 import { vectorStore } from "../services/vectorStore";
 import { batchEmbed, streamChatCompletion } from "../services/openaiClient";
 import { parseMentions } from "../lib/mentionParser";
+import { checkAndIncrementPrompt } from "../services/promptLimit";
 import type { ChatMessage, ChatSource } from "../types/chat";
 
 const SYSTEM_PROMPT = `You are a helpful assistant that answers questions based ONLY on the provided document excerpts.
@@ -42,6 +43,36 @@ export function useChat() {
   const sendMessage = useCallback(
     async (content: string) => {
       if (!settings.apiKey || streaming) return;
+
+      // Check prompt limit before proceeding
+      try {
+        const promptCheck = await checkAndIncrementPrompt();
+        if (!promptCheck.allowed) {
+          const userMsg: ChatMessage = {
+            id: crypto.randomUUID(),
+            role: "user",
+            content,
+            timestamp: Date.now(),
+          };
+          addMessage(userMsg);
+          addMessage({
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content:
+              "You've used all 5 free prompts. Upgrade to a paid plan for unlimited access.",
+            timestamp: Date.now(),
+          });
+          return;
+        }
+      } catch (err) {
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: `Error: ${err instanceof Error ? err.message : "Failed to check prompt limit"}`,
+          timestamp: Date.now(),
+        });
+        return;
+      }
 
       // Parse @mentions from the message
       const index = useAppStore.getState().index;

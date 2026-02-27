@@ -1,5 +1,6 @@
-import { MessageSquare, FolderOpen, Settings } from "lucide-react";
+import { MessageSquare, FolderOpen, Settings, LogOut } from "lucide-react";
 import { useAppStore, type ActiveView } from "../../store/appStore";
+import { useAuth } from "../../hooks/useAuth";
 
 const NAV_ITEMS: Array<{ view: ActiveView; icon: typeof MessageSquare; label: string }> = [
   { view: "chat", icon: MessageSquare, label: "Chat" },
@@ -11,6 +12,7 @@ export function Sidebar() {
   const activeView = useAppStore((s) => s.activeView);
   const setActiveView = useAppStore((s) => s.setActiveView);
   const index = useAppStore((s) => s.index);
+  const { user, promptCount, promptLimit, signOut } = useAuth();
 
   return (
     <aside className="w-[220px] shrink-0 bg-zinc-900 border-r border-zinc-800 flex flex-col">
@@ -36,7 +38,29 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-zinc-800">
+      <div className="p-4 border-t border-zinc-800 space-y-3">
+        {user && (
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p
+                className="text-xs text-zinc-400 truncate"
+                title={user.email ?? ""}
+              >
+                {user.email}
+              </p>
+              <p className="text-xs text-zinc-500">
+                {promptCount}/{promptLimit} prompts used
+              </p>
+            </div>
+            <button
+              onClick={signOut}
+              className="shrink-0 p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors"
+              title="Sign out"
+            >
+              <LogOut size={14} />
+            </button>
+          </div>
+        )}
         <div className="text-xs text-zinc-500">
           {index ? (
             <>

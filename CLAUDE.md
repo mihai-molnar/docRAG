@@ -9,6 +9,7 @@ Desktop RAG app: select a folder of documents (PDF, DOCX, PPTX), index them into
 - **Zustand** (state management)
 - **OpenAI API** (embeddings + chat), configurable models
 - **In-memory vector store** persisted as JSON
+- **Supabase** (auth + user profiles/prompt limits)
 
 ## Architecture
 - React runs in a WebView (browser context, NOT Node.js). All npm packages must be browser-compatible.
@@ -28,7 +29,8 @@ cargo check          # Rust type check (run from src-tauri/)
 - Frontend changes hot-reload via Vite — no restart needed
 - Rust changes require restarting `npx tauri dev`
 - Icon changes require `cargo clean` before rebuild (cached artifacts embed the old icon)
-- CSP is enabled and restrictive — only `https://api.openai.com` for fetch, `blob:` for pdf.js worker
+- CSP is enabled and restrictive — `https://api.openai.com` and `https://*.supabase.co` for fetch, `blob:` for pdf.js worker
+- Supabase env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) in `.env` (gitignored), exposed via `import.meta.env`
 - Opener plugin scoped to `$HOME/**/*.{pdf,docx,pptx}` only
 - API key stored via `tauri-plugin-store` in OS app data dir (not in repo)
 - Error messages are sanitized to strip API key patterns before display
@@ -36,12 +38,13 @@ cargo check          # Rust type check (run from src-tauri/)
 ## Project Structure
 ```
 src/
-  types/          — TypeScript interfaces (documents, vectorStore, chat, settings)
-  services/       — tauriCommands, documentParser, chunker, openaiClient, vectorStore, indexManager
-  hooks/          — useSettings, useIndex, useChat
+  types/          — TypeScript interfaces (documents, vectorStore, chat, settings, auth)
+  services/       — tauriCommands, documentParser, chunker, openaiClient, vectorStore, indexManager, supabase, promptLimit
+  hooks/          — useSettings, useIndex, useChat, useAuth
   components/
     layout/       — AppLayout, Sidebar
     chat/         — ChatView, MessageBubble, ChatInput, MentionDropdown, SourceChips
+    auth/         — AuthScreen, AuthForm
     documents/    — DocumentsView, FolderPicker, DocumentList, IndexingProgress
     settings/     — SettingsView, ApiKeyInput, ModelSelector
   lib/            — cosine, pptxParser, constants, mentionParser, docIcon
