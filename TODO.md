@@ -23,8 +23,10 @@
 - [x] Rename DocRAG → Inkling + new quill pen nib app icon
 - [x] Supabase auth (email/password sign-up/sign-in, session persistence, auth gating)
 - [x] Free tier prompt limit (5 prompts, server-side enforcement via Supabase RPC, UI counter + warnings)
+- [x] Persistent conversation history per folder (auto-save, sidebar list, per-user isolation via tauri-plugin-store)
 
 ## Remaining
+- [ ] Ollama local embeddings — free local embeddings, OpenAI for chat only (see [docs/OLLAMA_PLAN.md](docs/OLLAMA_PLAN.md))
 - [ ] Scale indexing to 5,000+ pages (see [docs/SCALE_PLAN.md](docs/SCALE_PLAN.md))
 - [ ] Phase 2: Stripe integration for paid plans (unlimited prompts)
 - [ ] Error handling polish: user-friendly messages for invalid API key (401), network errors, parse failures; skip broken files during indexing instead of aborting
