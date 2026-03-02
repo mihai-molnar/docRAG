@@ -6,6 +6,7 @@ import { parseMentions } from "../lib/mentionParser";
 import { checkAndIncrementPrompt } from "../services/promptLimit";
 import { saveActiveConversation } from "./useConversations";
 import type { ChatMessage, ChatSource } from "../types/chat";
+import type { SearchResult } from "../types/vectorStore";
 
 const SYSTEM_PROMPT = `You are a helpful assistant that answers questions based ONLY on the provided document excerpts.
 
@@ -95,16 +96,42 @@ export function useChat() {
 
       try {
         // Embed the clean content (@ stripped) and search
-        const [queryEmbedding] = await ollamaEmbed([cleanContent]);
+        const [queryEmbedding] = await ollamaEmbed([cleanContent], "search_query");
 
-        const results =
-          mentionedDocuments.length > 0
-            ? vectorStore.searchFiltered(
-                queryEmbedding,
-                settings.topK,
-                mentionedDocuments
-              )
-            : vectorStore.search(queryEmbedding, settings.topK);
+        let results: SearchResult[];
+
+        if (mentionedDocuments.length > 0) {
+          // Hybrid retrieval: semantic matches + evenly-spaced positional samples
+          // Ensures broad document coverage for summaries, cross-language, vague queries
+          const semantic = vectorStore.searchFiltered(
+            queryEmbedding,
+            15,
+            mentionedDocuments
+          );
+          const spread = vectorStore.spreadSample(mentionedDocuments, 15);
+
+          const seen = new Set<string>();
+          const merged: SearchResult[] = [];
+
+          for (const entry of spread) {
+            if (!seen.has(entry.id)) {
+              seen.add(entry.id);
+              merged.push({ entry, score: 0 });
+            }
+          }
+          for (const r of semantic) {
+            if (!seen.has(r.entry.id)) {
+              seen.add(r.entry.id);
+              merged.push(r);
+            }
+          }
+
+          // Sort by position for coherent reading order
+          merged.sort((a, b) => a.entry.chunkIndex - b.entry.chunkIndex);
+          results = merged;
+        } else {
+          results = vectorStore.search(queryEmbedding, settings.topK);
+        }
 
         const sources: ChatSource[] = results.map((r) => ({
           documentName: r.entry.documentName,

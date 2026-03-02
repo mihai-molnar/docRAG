@@ -19,11 +19,15 @@ export async function checkOllamaStatus(): Promise<{ running: boolean; hasModel:
   }
 }
 
-export async function ollamaEmbed(texts: string[]): Promise<number[][]> {
+export type EmbedTask = "search_document" | "search_query";
+
+export async function ollamaEmbed(texts: string[], task: EmbedTask = "search_document"): Promise<number[][]> {
   const allEmbeddings: number[][] = [];
 
   for (let i = 0; i < texts.length; i += EMBED_BATCH_SIZE) {
-    const batch = texts.slice(i, i + EMBED_BATCH_SIZE);
+    const batch = texts.slice(i, i + EMBED_BATCH_SIZE).map(
+      (t) => `${task}: ${t}`
+    );
 
     const response = await fetch(`${OLLAMA_BASE}/v1/embeddings`, {
       method: "POST",

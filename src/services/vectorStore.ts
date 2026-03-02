@@ -53,6 +53,22 @@ export class VectorStore {
     return scored.slice(0, topK);
   }
 
+  spreadSample(documentNames: string[], count: number): VectorEntry[] {
+    const nameSet = new Set(documentNames.map((n) => n.toLowerCase()));
+    const filtered = this.entries
+      .filter((e) => nameSet.has(e.documentName.toLowerCase()))
+      .sort((a, b) => a.chunkIndex - b.chunkIndex);
+
+    if (filtered.length <= count) return filtered;
+
+    const step = filtered.length / count;
+    const sampled: VectorEntry[] = [];
+    for (let i = 0; i < count; i++) {
+      sampled.push(filtered[Math.floor(i * step)]);
+    }
+    return sampled;
+  }
+
   get size(): number {
     return this.entries.length;
   }
