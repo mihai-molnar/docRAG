@@ -25,6 +25,7 @@
 - [x] Free tier prompt limit (5 prompts, server-side enforcement via Supabase RPC, UI counter + warnings)
 
 ## Remaining
+- [ ] Scale indexing to 5,000+ pages (see [docs/SCALE_PLAN.md](docs/SCALE_PLAN.md))
 - [ ] Phase 2: Stripe integration for paid plans (unlimited prompts)
 - [ ] Error handling polish: user-friendly messages for invalid API key (401), network errors, parse failures; skip broken files during indexing instead of aborting
 - [ ] Final build verification and end-to-end testing
