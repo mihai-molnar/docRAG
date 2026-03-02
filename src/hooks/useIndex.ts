@@ -15,7 +15,7 @@ export function useIndex() {
   const setIndexProgress = useAppStore((s) => s.setIndexProgress);
 
   const startIndexing = useCallback(async () => {
-    if (!folderPath || !settings.apiKey) return;
+    if (!folderPath) return;
 
     setIndexing(true);
     setIndexProgress(null);

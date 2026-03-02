@@ -55,6 +55,9 @@ interface AppState {
 
   streaming: boolean;
   setStreaming: (streaming: boolean) => void;
+
+  ollamaReady: boolean;
+  setOllamaReady: (ready: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -114,4 +117,7 @@ export const useAppStore = create<AppState>((set) => ({
 
   streaming: false,
   setStreaming: (streaming) => set({ streaming }),
+
+  ollamaReady: false,
+  setOllamaReady: (ready) => set({ ollamaReady: ready }),
 }));

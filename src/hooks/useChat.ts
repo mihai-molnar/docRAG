@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useAppStore } from "../store/appStore";
 import { vectorStore } from "../services/vectorStore";
-import { batchEmbed, streamChatCompletion } from "../services/openaiClient";
+import { ollamaEmbed, streamChatCompletion } from "../services/openaiClient";
 import { parseMentions } from "../lib/mentionParser";
 import { checkAndIncrementPrompt } from "../services/promptLimit";
 import { saveActiveConversation } from "./useConversations";
@@ -95,11 +95,7 @@ export function useChat() {
 
       try {
         // Embed the clean content (@ stripped) and search
-        const [queryEmbedding] = await batchEmbed(
-          [cleanContent],
-          settings.apiKey,
-          settings.embeddingModel
-        );
+        const [queryEmbedding] = await ollamaEmbed([cleanContent]);
 
         const results =
           mentionedDocuments.length > 0

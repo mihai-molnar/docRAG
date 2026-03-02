@@ -26,7 +26,7 @@
 - [x] Persistent conversation history per folder (auto-save, sidebar list, per-user isolation via tauri-plugin-store)
 
 ## Remaining
-- [ ] Ollama local embeddings — free local embeddings, OpenAI for chat only (see [docs/OLLAMA_PLAN.md](docs/OLLAMA_PLAN.md))
+- [x] Ollama local embeddings — free local embeddings via nomic-embed-text, OpenAI for chat only, automatic setup screen (detect/install/start/pull)
 - [ ] Scale indexing to 5,000+ pages (see [docs/SCALE_PLAN.md](docs/SCALE_PLAN.md))
 - [ ] Phase 2: Stripe integration for paid plans (unlimited prompts)
 - [ ] Error handling polish: user-friendly messages for invalid API key (401), network errors, parse failures; skip broken files during indexing instead of aborting

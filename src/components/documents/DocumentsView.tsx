@@ -8,7 +8,6 @@ import { DocumentList } from "./DocumentList";
 import { IndexingProgress } from "./IndexingProgress";
 
 export function DocumentsView() {
-  const settings = useAppStore((s) => s.settings);
   const folderPath = useAppStore((s) => s.folderPath);
   const { index, indexing, indexProgress, startIndexing, clearIndex } =
     useIndex();
@@ -27,8 +26,6 @@ export function DocumentsView() {
     }
   };
 
-  const hasApiKey = !!settings.apiKey;
-
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
       <div>
@@ -40,14 +37,7 @@ export function DocumentsView() {
 
       <FolderPicker />
 
-      {!hasApiKey && (
-        <div className="flex items-center gap-2 text-amber-400 bg-amber-400/10 px-4 py-3 rounded-lg text-sm">
-          <AlertCircle size={16} />
-          Set your OpenAI API key in Settings before indexing.
-        </div>
-      )}
-
-      {folderPath && hasApiKey && (
+      {folderPath && (
         <div className="flex items-center gap-3">
           <button
             onClick={handleIndex}
@@ -79,7 +69,7 @@ export function DocumentsView() {
         </div>
       )}
 
-      {folderPath && hasApiKey && (
+      {folderPath && (
         <div className="flex items-start gap-2 text-zinc-400 bg-zinc-800/50 px-4 py-3 rounded-lg text-sm">
           <Info size={16} className="mt-0.5 shrink-0" />
           <div className="flex-1">

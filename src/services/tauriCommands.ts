@@ -24,3 +24,11 @@ export async function loadIndex(): Promise<string | null> {
 export async function deleteIndex(): Promise<void> {
   return invoke("delete_index");
 }
+
+export async function checkOllamaInstalled(): Promise<boolean> {
+  return invoke<boolean>("check_ollama_installed");
+}
+
+export async function startOllamaServe(): Promise<void> {
+  return invoke("start_ollama_serve");
+}

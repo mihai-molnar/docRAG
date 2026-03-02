@@ -19,6 +19,8 @@ pub fn run() {
             commands::persistence::save_index,
             commands::persistence::load_index,
             commands::persistence::delete_index,
+            commands::ollama::check_ollama_installed,
+            commands::ollama::start_ollama_serve,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

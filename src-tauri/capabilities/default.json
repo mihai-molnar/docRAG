@@ -18,6 +18,7 @@
       ]
     },
     "opener:default",
+    "opener:allow-open-url",
     {
       "identifier": "opener:allow-open-path",
       "allow": [

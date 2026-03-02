@@ -1,10 +1,10 @@
 import type { FileEntry, TextChunk } from "../types/documents";
 import type { VectorEntry, PersistedIndex } from "../types/vectorStore";
 import type { AppSettings } from "../types/settings";
-import { scanFolder, readFileBytes, saveIndex, loadIndex } from "./tauriCommands";
+import { scanFolder, readFileBytes, saveIndex, loadIndex, deleteIndex } from "./tauriCommands";
 import { parseDocument } from "./documentParser";
 import { chunkDocument } from "./chunker";
-import { batchEmbed } from "./openaiClient";
+import { ollamaEmbed, OLLAMA_EMBED_MODEL } from "./openaiClient";
 import { vectorStore } from "./vectorStore";
 import { INDEX_VERSION } from "../lib/constants";
 
@@ -102,11 +102,7 @@ async function processFiles(
     filesTotal: totalFiles,
   });
 
-  const embeddings = await batchEmbed(
-    allChunks.map((c) => c.content),
-    settings.apiKey,
-    settings.embeddingModel
-  );
+  const embeddings = await ollamaEmbed(allChunks.map((c) => c.content));
 
   return allChunks.map((chunk, i) => ({
     id: chunk.id,
@@ -141,7 +137,7 @@ export async function buildIndex(
   // Force full re-index if embedding model or chunk settings changed
   if (
     existingIndex &&
-    (existingIndex.embeddingModel !== settings.embeddingModel ||
+    (existingIndex.embeddingModel !== OLLAMA_EMBED_MODEL ||
       existingIndex.chunkSize !== settings.chunkSize ||
       existingIndex.chunkOverlap !== settings.chunkOverlap ||
       existingIndex.folderPath !== folderPath)
@@ -181,7 +177,7 @@ export async function buildIndex(
   const now = new Date().toISOString();
   const index: PersistedIndex = {
     version: INDEX_VERSION,
-    embeddingModel: settings.embeddingModel,
+    embeddingModel: OLLAMA_EMBED_MODEL,
     chunkSize: settings.chunkSize,
     chunkOverlap: settings.chunkOverlap,
     folderPath,
@@ -211,6 +207,13 @@ export async function restoreIndex(): Promise<PersistedIndex | null> {
 
   try {
     const index: PersistedIndex = JSON.parse(json);
+
+    // Detect incompatible index (e.g. old OpenAI embeddings with different dimensions)
+    if (index.embeddingModel !== OLLAMA_EMBED_MODEL) {
+      await deleteIndex();
+      return null;
+    }
+
     vectorStore.setEntries(index.vectors);
     return index;
   } catch {

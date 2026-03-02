@@ -1,7 +1,9 @@
-import { AlertTriangle, HelpCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, HelpCircle, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useSettings } from "../../hooks/useSettings";
 import { useAppStore } from "../../store/appStore";
-import { CHAT_MODELS, EMBEDDING_MODELS } from "../../types/settings";
+import { CHAT_MODELS } from "../../types/settings";
+import { checkOllamaStatus, OLLAMA_EMBED_MODEL } from "../../services/openaiClient";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelector } from "./ModelSelector";
 
@@ -19,17 +21,68 @@ function SettingLabel({ text, tooltip }: { text: string; tooltip: string }) {
   );
 }
 
+function OllamaStatus() {
+  const [status, setStatus] = useState<{ running: boolean; hasModel: boolean } | null>(null);
+
+  useEffect(() => {
+    checkOllamaStatus().then(setStatus);
+  }, []);
+
+  if (!status) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-zinc-500">
+        <Loader2 size={14} className="animate-spin" />
+        Checking Ollama...
+      </div>
+    );
+  }
+
+  if (!status.running) {
+    return (
+      <div className="flex items-start gap-2 text-sm text-red-400 bg-red-400/10 px-3 py-2 rounded-lg">
+        <XCircle size={16} className="shrink-0 mt-0.5" />
+        <div>
+          <p className="font-medium">Ollama is not running</p>
+          <p className="text-red-400/70 mt-0.5">
+            Install with <code className="bg-red-400/10 px-1 rounded">brew install ollama</code> and
+            run <code className="bg-red-400/10 px-1 rounded">ollama serve</code>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!status.hasModel) {
+    return (
+      <div className="flex items-start gap-2 text-sm text-amber-400 bg-amber-400/10 px-3 py-2 rounded-lg">
+        <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+        <div>
+          <p className="font-medium">Embedding model not found</p>
+          <p className="text-amber-400/70 mt-0.5">
+            Run <code className="bg-amber-400/10 px-1 rounded">ollama pull {OLLAMA_EMBED_MODEL}</code> to
+            download it
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 text-sm text-emerald-400">
+      <CheckCircle2 size={16} />
+      Ollama running — {OLLAMA_EMBED_MODEL} ready
+    </div>
+  );
+}
+
 export function SettingsView() {
   const { settings, saveSetting } = useSettings();
   const index = useAppStore((s) => s.index);
 
-  const embeddingModelChanged =
-    index && index.embeddingModel !== settings.embeddingModel;
   const chunkSettingsChanged =
     index &&
     (index.chunkSize !== settings.chunkSize ||
       index.chunkOverlap !== settings.chunkOverlap);
-  const needsReindex = embeddingModelChanged || chunkSettingsChanged;
 
   return (
     <div className="flex-1 overflow-y-auto p-6">
@@ -48,7 +101,7 @@ export function SettingsView() {
           <div>
             <SettingLabel
               text="OpenAI API Key"
-              tooltip="Your secret API key from platform.openai.com. Stored locally on your device, never sent anywhere except OpenAI."
+              tooltip="Your secret API key from platform.openai.com. Used for chat completions only. Stored locally on your device."
             />
             <ApiKeyInput
               value={settings.apiKey}
@@ -68,26 +121,22 @@ export function SettingsView() {
             onChange={(v) => saveSetting("chatModel", v)}
             tooltip="The OpenAI model used to generate chat responses. Larger models are more capable but slower and cost more."
           />
-          <ModelSelector
-            label="Embedding Model"
-            value={settings.embeddingModel}
-            options={EMBEDDING_MODELS}
-            onChange={(v) => saveSetting("embeddingModel", v)}
-            tooltip="The model used to convert text into vectors for similarity search. Changing this requires re-indexing."
-          />
+          <div>
+            <SettingLabel
+              text="Embeddings"
+              tooltip="Document embeddings run locally via Ollama for free. No API key needed for indexing."
+            />
+            <OllamaStatus />
+          </div>
         </section>
 
-        {needsReindex && (
+        {chunkSettingsChanged && (
           <div className="flex items-start gap-3 text-amber-400 bg-amber-400/10 px-4 py-3 rounded-lg text-sm">
             <AlertTriangle size={18} className="shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Re-indexing required</p>
               <p className="text-amber-400/70 mt-0.5">
-                {embeddingModelChanged
-                  ? "The embedding model has changed. "
-                  : ""}
-                {chunkSettingsChanged ? "Chunk settings have changed. " : ""}
-                Go to Documents and re-index to apply changes.
+                Chunk settings have changed. Go to Documents and re-index to apply changes.
               </p>
             </div>
           </div>
