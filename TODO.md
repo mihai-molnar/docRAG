@@ -27,6 +27,7 @@
 
 ## Remaining
 - [x] Ollama local embeddings — free local embeddings via nomic-embed-text, OpenAI for chat only, automatic setup screen (detect/install/start/pull)
+- [x] Retrieval quality improvements — hybrid retrieval (semantic + positional sampling) for @mentioned docs, task prefixes for nomic-embed-text, score threshold filtering, fuzzy source-to-response matching
 - [ ] Scale indexing to 5,000+ pages (see [docs/SCALE_PLAN.md](docs/SCALE_PLAN.md))
 - [ ] Phase 2: Stripe integration for paid plans (unlimited prompts)
 - [ ] Error handling polish: user-friendly messages for invalid API key (401), network errors, parse failures; skip broken files during indexing instead of aborting

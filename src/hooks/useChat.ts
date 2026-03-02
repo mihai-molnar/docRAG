@@ -133,7 +133,7 @@ export function useChat() {
           results = vectorStore.search(queryEmbedding, settings.topK);
         }
 
-        const sources: ChatSource[] = results.map((r) => ({
+        const allChunks: ChatSource[] = results.map((r) => ({
           documentName: r.entry.documentName,
           documentPath: r.entry.documentPath,
           chunkContent: r.entry.content,
@@ -141,8 +141,16 @@ export function useChat() {
           pageNumber: r.entry.pageNumber,
         }));
 
-        // Build messages for the API
-        const contextPrompt = buildContextPrompt(sources);
+        // All chunks go to the LLM for maximum context
+        const contextPrompt = buildContextPrompt(allChunks);
+
+        // Filter displayed sources: for @mentioned docs keep all,
+        // for general queries filter out low-similarity noise
+        const MIN_SCORE = 0.3;
+        const sources =
+          mentionedDocuments.length > 0
+            ? allChunks
+            : allChunks.filter((s) => s.score >= MIN_SCORE);
         const apiMessages = [
           { role: "system" as const, content: SYSTEM_PROMPT },
           { role: "system" as const, content: contextPrompt },
@@ -184,11 +192,29 @@ export function useChat() {
           lower.includes("not mentioned in the provided");
 
         if (!noAnswer) {
+          // Only show sources for documents the LLM actually referenced.
+          // Use fuzzy matching: check if any significant word (>3 chars) from
+          // the filename appears in the response text.
+          const responseLower = fullContent.toLowerCase();
+          const docReferencedInResponse = (name: string): boolean => {
+            const words = name
+              .replace(/\.[^.]+$/, "") // strip extension
+              .toLowerCase()
+              .split(/[\s.\-_]+/)
+              .filter((w) => w.length > 3);
+            return words.some((w) => responseLower.includes(w));
+          };
+          const relevantSources = sources.filter((s) =>
+            docReferencedInResponse(s.documentName)
+          );
+          const finalSources =
+            relevantSources.length > 0 ? relevantSources : sources;
+
           const msgs = useAppStore.getState().messages;
           const updated = [...msgs];
           for (let i = updated.length - 1; i >= 0; i--) {
             if (updated[i].role === "assistant") {
-              updated[i] = { ...updated[i], sources };
+              updated[i] = { ...updated[i], sources: finalSources };
               break;
             }
           }
