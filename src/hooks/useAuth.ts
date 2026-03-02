@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from "react";
 import { supabase } from "../services/supabase";
 import { useAppStore } from "../store/appStore";
+import { loadConversations, clearConversationState } from "./useConversations";
 
 async function fetchProfile() {
   const { data, error } = await supabase
@@ -35,7 +36,10 @@ export function useAuth() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile();
+      if (session?.user) {
+        fetchProfile();
+        loadConversations();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -59,6 +63,7 @@ export function useAuth() {
     if (error) throw error;
     useAppStore.getState().setPromptCount(0);
     useAppStore.getState().setPromptLimit(5);
+    clearConversationState();
   }, []);
 
   return {

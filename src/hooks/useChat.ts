@@ -4,6 +4,7 @@ import { vectorStore } from "../services/vectorStore";
 import { batchEmbed, streamChatCompletion } from "../services/openaiClient";
 import { parseMentions } from "../lib/mentionParser";
 import { checkAndIncrementPrompt } from "../services/promptLimit";
+import { saveActiveConversation } from "./useConversations";
 import type { ChatMessage, ChatSource } from "../types/chat";
 
 const SYSTEM_PROMPT = `You are a helpful assistant that answers questions based ONLY on the provided document excerpts.
@@ -38,7 +39,6 @@ export function useChat() {
   );
   const streaming = useAppStore((s) => s.streaming);
   const setStreaming = useAppStore((s) => s.setStreaming);
-  const clearMessages = useAppStore((s) => s.clearMessages);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -62,6 +62,7 @@ export function useChat() {
               "You've used all 5 free prompts. Upgrade to a paid plan for unlimited access.",
             timestamp: Date.now(),
           });
+          await saveActiveConversation();
           return;
         }
       } catch (err) {
@@ -180,6 +181,7 @@ export function useChat() {
         addMessage(errorMessage);
       } finally {
         setStreaming(false);
+        await saveActiveConversation();
       }
     },
     [
@@ -192,5 +194,9 @@ export function useChat() {
     ]
   );
 
-  return { messages, sendMessage, streaming, clearMessages };
+  const newConversation = useCallback(() => {
+    useAppStore.setState({ messages: [], activeConversationId: null });
+  }, []);
+
+  return { messages, sendMessage, streaming, newConversation };
 }

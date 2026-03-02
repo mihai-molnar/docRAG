@@ -4,6 +4,7 @@ import { AuthScreen } from "./components/auth/AuthScreen";
 import { useIndex } from "./hooks/useIndex";
 import { useAuth } from "./hooks/useAuth";
 import { loadSettings } from "./hooks/useSettings";
+import { loadConversations } from "./hooks/useConversations";
 import { Loader2 } from "lucide-react";
 
 export default function App() {
@@ -14,6 +15,12 @@ export default function App() {
     loadSettings();
     restore();
   }, [restore]);
+
+  useEffect(() => {
+    if (user) {
+      loadConversations();
+    }
+  }, [user]);
 
   if (authLoading) {
     return (

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useMemo } from "react";
-import { MessageSquare, FolderOpen, Trash2, AlertTriangle } from "lucide-react";
+import { MessageSquare, FolderOpen, SquarePen, AlertTriangle } from "lucide-react";
 import { useChat } from "../../hooks/useChat";
 import { useAppStore } from "../../store/appStore";
 import { MessageBubble } from "./MessageBubble";
@@ -12,7 +12,7 @@ const SUGGESTIONS = [
 ];
 
 export function ChatView() {
-  const { messages, sendMessage, streaming, clearMessages } = useChat();
+  const { messages, sendMessage, streaming, newConversation } = useChat();
   const index = useAppStore((s) => s.index);
   const settings = useAppStore((s) => s.settings);
   const setActiveView = useAppStore((s) => s.setActiveView);
@@ -87,11 +87,11 @@ export function ChatView() {
         </h2>
         {messages.length > 0 && (
           <button
-            onClick={clearMessages}
+            onClick={newConversation}
             className="text-zinc-500 hover:text-zinc-300 transition-colors"
-            title="Clear chat"
+            title="New conversation"
           >
-            <Trash2 size={16} />
+            <SquarePen size={16} />
           </button>
         )}
       </div>

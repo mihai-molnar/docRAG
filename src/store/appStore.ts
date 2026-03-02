@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { User, Session } from "@supabase/supabase-js";
 import type { PersistedIndex } from "../types/vectorStore";
 import type { ChatMessage } from "../types/chat";
+import type { Conversation } from "../types/conversation";
 import type { AppSettings } from "../types/settings";
 import { DEFAULT_SETTINGS } from "../types/settings";
 import type { IndexProgress } from "../services/indexManager";
@@ -46,6 +47,11 @@ interface AppState {
   addMessage: (message: ChatMessage) => void;
   updateLastAssistantMessage: (content: string) => void;
   clearMessages: () => void;
+
+  activeConversationId: string | null;
+  setActiveConversationId: (id: string | null) => void;
+  conversations: Conversation[];
+  setConversations: (conversations: Conversation[]) => void;
 
   streaming: boolean;
   setStreaming: (streaming: boolean) => void;
@@ -100,6 +106,11 @@ export const useAppStore = create<AppState>((set) => ({
       return { messages: msgs };
     }),
   clearMessages: () => set({ messages: [] }),
+
+  activeConversationId: null,
+  setActiveConversationId: (id) => set({ activeConversationId: id }),
+  conversations: [],
+  setConversations: (conversations) => set({ conversations }),
 
   streaming: false,
   setStreaming: (streaming) => set({ streaming }),
