@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   chatModel: "gpt-4o-mini",
   chunkSize: 512,
   chunkOverlap: 100,
-  topK: 5,
+  topK: 10,
   temperature: 0.1,
 };
 

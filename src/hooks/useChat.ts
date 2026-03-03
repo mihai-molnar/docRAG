@@ -12,9 +12,11 @@ const SYSTEM_PROMPT = `You are a helpful assistant that answers questions based 
 
 Rules:
 - Only use information from the provided excerpts to answer
+- Combine and synthesize information from multiple excerpts to build a comprehensive answer — character names, themes, events, and facts may be spread across many excerpts
 - You may generate derivative content (quizzes, summaries, flashcards, study guides, comparisons, etc.) as long as it is based on the provided excerpts
 - When referencing information, naturally mention the document name in your answer (e.g. "According to report.pdf..." or "The budget spreadsheet shows...")
-- If the excerpts don't contain enough information to answer, say "I don't have enough information in the provided documents to answer this question."
+- Only say "I don't have enough information in the provided documents to answer this question." if the excerpts are truly unrelated to the question
+- Answer in the same language the user uses
 - Be concise and accurate
 - Do not make up information not present in the excerpts`;
 
@@ -84,6 +86,22 @@ export function useChat() {
         knownDocNames
       );
 
+      // For follow-up queries without @mentions, carry forward mentions
+      // from recent conversation so "what are the main characters?" still
+      // targets the previously-mentioned document.
+      let effectiveMentions = mentionedDocuments;
+      if (effectiveMentions.length === 0 && messages.length > 0) {
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].role === "user") {
+            const prev = parseMentions(messages[i].content, knownDocNames);
+            if (prev.mentionedDocuments.length > 0) {
+              effectiveMentions = prev.mentionedDocuments;
+              break;
+            }
+          }
+        }
+      }
+
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "user",
@@ -100,35 +118,36 @@ export function useChat() {
 
         let results: SearchResult[];
 
-        if (mentionedDocuments.length > 0) {
-          // Hybrid retrieval: semantic matches + evenly-spaced positional samples
-          // Ensures broad document coverage for summaries, cross-language, vague queries
+        if (effectiveMentions.length > 0) {
+          // Semantic search + context expansion: find the best matches
+          // then include ±1 neighboring chunks for surrounding context.
+          // This compensates for small chunk sizes by grouping related content.
           const semantic = vectorStore.searchFiltered(
             queryEmbedding,
-            15,
-            mentionedDocuments
+            20,
+            effectiveMentions
           );
-          const spread = vectorStore.spreadSample(mentionedDocuments, 15);
+          const expanded = vectorStore.expandWithNeighbors(semantic, 1);
 
-          const seen = new Set<string>();
-          const merged: SearchResult[] = [];
+          // Add spread samples for broad coverage (fewer than before to reduce noise)
+          const spread = vectorStore.spreadSample(effectiveMentions, 15);
 
+          const seen = new Set<string>(expanded.map((r) => r.entry.id));
+          const spreadResults: SearchResult[] = [];
           for (const entry of spread) {
             if (!seen.has(entry.id)) {
               seen.add(entry.id);
-              merged.push({ entry, score: 0 });
-            }
-          }
-          for (const r of semantic) {
-            if (!seen.has(r.entry.id)) {
-              seen.add(r.entry.id);
-              merged.push(r);
+              spreadResults.push({ entry, score: 0 });
             }
           }
 
-          // Sort by position for coherent reading order
-          merged.sort((a, b) => a.entry.chunkIndex - b.entry.chunkIndex);
-          results = merged;
+          // Semantic results first (by score desc) for relevance,
+          // then spread samples (by position) for breadth
+          expanded.sort((a, b) => b.score - a.score);
+          spreadResults.sort(
+            (a, b) => a.entry.chunkIndex - b.entry.chunkIndex
+          );
+          results = [...expanded, ...spreadResults];
         } else {
           results = vectorStore.search(queryEmbedding, settings.topK);
         }
@@ -148,7 +167,7 @@ export function useChat() {
         // for general queries filter out low-similarity noise
         const MIN_SCORE = 0.3;
         const sources =
-          mentionedDocuments.length > 0
+          effectiveMentions.length > 0
             ? allChunks
             : allChunks.filter((s) => s.score >= MIN_SCORE);
         const apiMessages = [
