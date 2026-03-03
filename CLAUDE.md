@@ -8,6 +8,7 @@ Desktop RAG app: select a folder of documents (PDF, DOCX, PPTX), index them into
 - **Tailwind CSS v4** + **lucide-react** (styling/icons)
 - **Zustand** (state management)
 - **Ollama** (local embeddings via nomic-embed-text) + **OpenAI API** (chat), configurable chat model
+- **jsPDF** (client-side PDF generation for answer export)
 - **In-memory vector store** persisted as JSON
 - **Supabase** (auth + user profiles/prompt limits)
 
@@ -48,7 +49,7 @@ src/
     setup/        — OllamaSetup (auto-detects, starts server, pulls model)
     documents/    — DocumentsView, FolderPicker, DocumentList, IndexingProgress
     settings/     — SettingsView, ApiKeyInput, ModelSelector
-  lib/            — cosine, pptxParser, constants, mentionParser, docIcon
+  lib/            — cosine, pptxParser, pdfExport, constants, mentionParser, docIcon
   store/          — appStore (Zustand)
 src-tauri/
   src/commands/   — filesystem.rs (scan, read, hash with path validation), persistence.rs (index save/load), ollama.rs (detect install, start server)
